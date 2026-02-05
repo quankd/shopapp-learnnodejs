@@ -4,9 +4,11 @@ import { Application } from "express";
 import cors from "cors";
 import { json, urlencoded } from "body-parser";
 import cookieSession from "cookie-session";
-import mongoose from "mongoose";
+import mongoose, { PromiseProvider } from "mongoose";
 import { errorHandler } from "@shopapp-learnnodejs/common";
 import { authRouters } from "./auth/auth.router";
+import { currentUser } from "@shopapp-learnnodejs/common";
+import { sellerRouters } from "./seller/seller.routers";
 export class AppModule {
   constructor(public app: Application) {
     app.set("trust-proxy", true);
@@ -26,10 +28,8 @@ export class AppModule {
         secure: false,
       }),
     );
-    app.use(authRouters)
-    app.use(errorHandler)
 
-    Object.setPrototypeOf(this,AppModule.prototype)
+    Object.setPrototypeOf(this, AppModule.prototype);
   }
 
   async start() {
@@ -48,6 +48,11 @@ export class AppModule {
     } catch (err) {
       throw new Error("database connection error");
     }
+    this.app.use(currentUser(process.env.JWT_KEY!));
+    this.app.use(authRouters);
+    this.app.use(sellerRouters)
+    this.app.use(errorHandler);
+
     this.app.listen(8080, () => console.log("Ok! port 8080"));
   }
 }
