@@ -14,8 +14,7 @@ export class AuthService {
 
   async signup(AuthDto: AuthDto) {
     const existingUser = await this.userService.findOneByEmail(AuthDto.email);
-    if (existingUser)
-      return {message: "email is taken"}
+    if (existingUser) return { message: "email is taken" };
 
     const newUser = await this.userService.create(AuthDto);
 
@@ -24,23 +23,31 @@ export class AuthService {
       process.env.JWT_KEY!,
     );
 
-    return {jwt};
+    return { jwt };
   }
   async signin(signinDto: AuthDto) {
     const user = await this.userService.findOneByEmail(signinDto.email);
-    if (!user) return {message: "wrong credentials"};
+    if (!user) return { message: "wrong credentials" };
 
-    const samePwd = this.authenticationService.pwdCompare(
-      user.password,
-      signinDto.password,
-    );
+    let samePwd: boolean;
 
-    if (!samePwd) return {message: "wrong credentials"};
+    try {
+      samePwd = await this.authenticationService.pwdCompare(
+        user.password,
+        signinDto.password,
+      );
+    } catch (err) {
+      return { message: "wrong credentials" };
+    }
+
+    if (!samePwd) return { message: "wrong credentials" };
+
     const jwt = this.authenticationService.generateJwt(
       { email: user.email, userId: user.id },
       process.env.JWT_KEY!,
     );
-    return {jwt};
+
+    return { jwt };
   }
 }
 

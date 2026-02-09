@@ -47,6 +47,9 @@ router.post(
   requireAuth,
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
+    if (!req.body) {
+      return next(new BadRequestError("Request body is required"));
+    }
     const { title, price } = req.body;
     if (!id) return new BadRequestError("Product id is required");
     const result = await sellerService.updateProduct({

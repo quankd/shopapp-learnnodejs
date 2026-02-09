@@ -9,6 +9,7 @@ import { errorHandler } from "@shopapp-learnnodejs/common";
 import { authRouters } from "./auth/auth.router";
 import { currentUser } from "@shopapp-learnnodejs/common";
 import { sellerRouters } from "./seller/seller.routers";
+import { buyerRouters } from "./buyer/buyer.routers";
 export class AppModule {
   constructor(public app: Application) {
     app.set("trust-proxy", true);
@@ -39,6 +40,9 @@ export class AppModule {
     if (!process.env.JWT_KEY) {
       throw new Error("jwt must be defined");
     }
+    if(!process.env.STRIPE_KEY){
+      throw new Error("Stripe key must be defined")
+    }
     try {
       await mongoose.connect(process.env.MONGO_URI, {
         serverSelectionTimeoutMS: 5000,
@@ -50,7 +54,8 @@ export class AppModule {
     }
     this.app.use(currentUser(process.env.JWT_KEY!));
     this.app.use(authRouters);
-    this.app.use(sellerRouters)
+    this.app.use(sellerRouters);
+    this.app.use(buyerRouters);
     this.app.use(errorHandler);
 
     this.app.listen(8080, () => console.log("Ok! port 8080"));

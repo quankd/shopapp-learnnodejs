@@ -23,11 +23,18 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const result = await authService.signin({ email, password });
+    if(result.message) return next(new BadRequestError(result.message))
     req.session = { jwt: result.jwt };
 
     res.status(200).send(true);
   },
 );
+
+router.get('/signout' , (req: Request, res: Response, next: NextFunction) => {
+    req.session = null;
+    res.status(200).send('signout successfully ');
+    console.log("signout successfully! ")
+})
 
 router.get('/current-user', currentUser(process.env.JWT_KEY!) ,async (req: Request, res: Response, next: NextFunction)=>{
     res.status(200).send(req.currentUser)
